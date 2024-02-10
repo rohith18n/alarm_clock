@@ -1,4 +1,4 @@
-import 'package:alarm_clock/models/menu_info.dart';
+import 'package:alarm_clock/providers/menu_info.dart';
 import 'package:alarm_clock/utils/data.dart';
 import 'package:alarm_clock/utils/enums.dart';
 import 'package:alarm_clock/utils/theme_data.dart';
@@ -50,8 +50,6 @@ class _HomePageState extends State<HomePage> {
     return Consumer<MenuInfo>(
       builder: (BuildContext context, MenuInfo value, Widget? child) {
         return MaterialButton(
-          shape: const RoundedRectangleBorder(
-              borderRadius: BorderRadius.only(topRight: Radius.circular(32))),
           padding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 0),
           color: currentMenuInfo.menuType == value.menuType
               ? CustomColors.menuBackgroundColor

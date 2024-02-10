@@ -1,5 +1,5 @@
 import 'package:alarm_clock/models/alarm_info.dart';
-import 'package:alarm_clock/models/menu_info.dart';
+import 'package:alarm_clock/providers/menu_info.dart';
 import 'package:alarm_clock/utils/enums.dart';
 
 List<MenuInfo> menuItems = [

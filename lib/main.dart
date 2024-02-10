@@ -1,4 +1,5 @@
-import 'package:alarm_clock/models/menu_info.dart';
+import 'package:alarm_clock/providers/alarm_provider.dart';
+import 'package:alarm_clock/providers/menu_info.dart';
 import 'package:alarm_clock/providers/getcityweather_service.dart';
 import 'package:alarm_clock/providers/getweather_service.dart';
 import 'package:alarm_clock/utils/enums.dart';
@@ -34,11 +35,20 @@ void main() async {
   runApp(Sizer(builder: (context, orientation, deviceType) {
     return MultiProvider(
       providers: [
+        ChangeNotifierProvider<AlarmController>(create: (_) {
+          var alarmController = AlarmController();
+          alarmController.initAlarm(); // Call initAlarm here
+          return alarmController;
+        }),
         ChangeNotifierProvider<MenuInfo>(
           create: (context) => MenuInfo(MenuType.clock),
         ),
         ChangeNotifierProvider<WeatherDetailsServices>(
-          create: (context) => WeatherDetailsServices(),
+          create: (context) {
+            var weatherDetailsServices = WeatherDetailsServices();
+            weatherDetailsServices.getLocationAndFetchWeather();
+            return weatherDetailsServices;
+          },
         ),
         ChangeNotifierProxyProvider<WeatherDetailsServices,
             CityWeatherDetailsServices>(

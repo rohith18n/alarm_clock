@@ -1,51 +1,42 @@
+import 'dart:async';
+import 'dart:developer';
 import 'package:alarm_clock/main.dart';
-import 'package:alarm_clock/models/alarm_info.dart';
-import 'package:alarm_clock/services/alarm_helper.dart';
 import 'package:flutter/material.dart';
+import 'package:alarm_clock/services/alarm_helper.dart';
+import 'package:alarm_clock/models/alarm_info.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
 
-class AlarmProvider extends ChangeNotifier {
-  DateTime? _alarmTime;
+class AlarmController extends ChangeNotifier {
+  DateTime? alarmTime;
+  late String alarmTimeString;
+  bool isRepeatSelected = false;
   final AlarmHelper _alarmHelper = AlarmHelper();
-  late Future<List<AlarmInfo>> alarms;
+  Future<List<AlarmInfo>>? alarms;
   List<AlarmInfo>? currentAlarms;
 
-  Future<void> initializeAlarms() async {
-    await _alarmHelper.initializeDatabase();
-    loadAlarms();
+  void initAlarm() {
+    alarmTime = DateTime.now();
+    _alarmHelper.initializeDatabase().then((value) {
+      log('------database intialized');
+      loadAlarms();
+    });
   }
 
-  Future<void> loadAlarms() async {
+  void loadAlarms() {
     alarms = _alarmHelper.getAlarms();
     notifyListeners();
   }
 
-  Future<void> deleteAlarm(int? id) async {
-    await _alarmHelper.delete(id);
+  void deleteAlarm(int? id) {
+    _alarmHelper.delete(id);
+    //unsubscribe for notification
     loadAlarms();
   }
 
-  void onSaveAlarm(bool _isRepeating) {
-    DateTime? scheduleAlarmDateTime;
-    if (_alarmTime!.isAfter(DateTime.now())) {
-      scheduleAlarmDateTime = _alarmTime;
-    } else {
-      scheduleAlarmDateTime = _alarmTime!.add(const Duration(days: 1));
-    }
-
-    var alarmInfo = AlarmInfo(
-      alarmDateTime: scheduleAlarmDateTime,
-      gradientColorIndex: currentAlarms!.length,
-      title: 'alarm',
-    );
-    _alarmHelper.insertAlarm(alarmInfo);
-    if (scheduleAlarmDateTime != null) {
-      scheduleAlarm(scheduleAlarmDateTime, alarmInfo,
-          isRepeating: _isRepeating);
-    }
-    // Navigator.pop(context);
-    loadAlarms();
+  void updateIsRepeatSelected(bool value) {
+    isRepeatSelected = value;
+    notifyListeners();
   }
 
   void scheduleAlarm(
@@ -96,5 +87,27 @@ class AlarmProvider extends ChangeNotifier {
             UILocalNotificationDateInterpretation.absoluteTime,
       );
     }
+  }
+
+  void onSaveAlarm(bool _isRepeating, BuildContext context) {
+    DateTime? scheduleAlarmDateTime;
+    if (alarmTime!.isAfter(DateTime.now())) {
+      scheduleAlarmDateTime = alarmTime;
+    } else {
+      scheduleAlarmDateTime = alarmTime!.add(const Duration(days: 1));
+    }
+
+    var alarmInfo = AlarmInfo(
+      alarmDateTime: scheduleAlarmDateTime,
+      gradientColorIndex: currentAlarms!.length,
+      title: 'alarm',
+    );
+    _alarmHelper.insertAlarm(alarmInfo);
+    if (scheduleAlarmDateTime != null) {
+      scheduleAlarm(scheduleAlarmDateTime, alarmInfo,
+          isRepeating: _isRepeating);
+    }
+    Navigator.pop(context);
+    loadAlarms();
   }
 }
